@@ -1,0 +1,4 @@
+iperf:
+    build: iperf/
+    ports:
+        - "5001:5001"
