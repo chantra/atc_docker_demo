@@ -1,4 +1,16 @@
+atcd:
+    image: atcd/atc:0.1.2
+    cap_add:
+        - NET_ADMIN
+    net: "host"
+    environment:
+        - ATCD_WAN=eth0
+        - ATCD_LAN=docker0
+        - ATCD_OPTIONS=
+        - affinity:container!=*atcd*
+    expose:
+        - '8000'
 iperf:
-    build: iperf/
+    build: ./iperf/
     ports:
         - "5001:5001"

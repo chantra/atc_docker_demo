@@ -5,15 +5,52 @@ URI=/api/v1/shape/
 #ENDPOINT=http://${GW}:8000/api/v1/shape/
 
 
-UP=${UP:-500}
-DOWN=${DOWN:-500}
+UP=${UP:-0}
+DOWN=${DOWN:-0}
+UP_DELAY=${UP_DELAY:-0}
+DOWN_DELAY=${DOWN_DELAY:-0}
+ACTION=${ACTION:-"shape"}
 
-content="
+while getopts ":a:u:d:Dl:L:" opt; do
+    case $opt in
+        a)
+            ACTION="${OPTARG}"
+            ;;
+        u)
+            UP="${OPTARG}"
+            ;;
+        d)
+            DOWN="${OPTARG}"
+            ;;
+        l)
+            DOWN_DELAY="${OPTARG}"
+            ;;
+        L)
+            UP_DELAY="${OPTARG}"
+            ;;
+        D)
+            set -x
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+        :)
+            echo "Option -$OPTARG requires an argument." >&2
+            exit 1
+            ;;
+    esac
+done
+
+function shape {
+    up=$1
+    down=$2
+    content="
 {
   \"up\": {
-    \"rate\": \"${UP}\",
+    \"rate\": \"${up}\",
     \"delay\": {
-      \"delay\": 0,
+      \"delay\": ${UP_DELAY},
       \"jitter\": 0,
       \"correlation\": 0
     },
@@ -33,9 +70,9 @@ content="
     \"iptables_options\": []
   },
   \"down\": {
-    \"rate\": \"${DOWN}\",
+    \"rate\": \"${down}\",
     \"delay\": {
-      \"delay\": 0,
+      \"delay\": ${DOWN_DELAY},
       \"jitter\": 0,
       \"correlation\": 0
     },
@@ -57,7 +94,7 @@ content="
 }"
 
 
-cat <<EOF | nc ${GW} 8000
+    cat <<EOF | nc ${GW} 8000
 POST ${URI} HTTP/1.0
 Content-Type: application/json
 Accept: application/json; indent=2
@@ -65,3 +102,23 @@ Content-Length: ${#content}
 
 ${content}
 EOF
+}
+
+function unshape {
+    cat <<EOF | nc ${GW} 8000
+DELETE ${URI} HTTP/1.0
+Content-Type: application/json
+Accept: application/json; indent=2
+
+EOF
+
+}
+
+if [ "${ACTION}" == "shape" ]; then
+    shape "$UP" "$DOWN"
+elif [ "${ACTION}" == "unshape" ]; then
+    unshape
+fi
+
+exit 0
+
