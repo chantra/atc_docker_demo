@@ -9,9 +9,11 @@ UP=${UP:-0}
 DOWN=${DOWN:-0}
 UP_DELAY=${UP_DELAY:-0}
 DOWN_DELAY=${DOWN_DELAY:-0}
+UP_LOSS=${UP_LOSS:-0}
+DOWN_LOSS=${DOWN_LOSS:-0}
 ACTION=${ACTION:-"shape"}
 
-while getopts ":a:u:d:Dl:L:" opt; do
+while getopts ":a:u:d:Dl:L:x:X:" opt; do
     case $opt in
         a)
             ACTION="${OPTARG}"
@@ -27,6 +29,12 @@ while getopts ":a:u:d:Dl:L:" opt; do
             ;;
         L)
             UP_DELAY="${OPTARG}"
+            ;;
+        x)
+            DOWN_LOSS="${OPTARG}"
+            ;;
+        X)
+            UP_LOSS="${OPTARG}"
             ;;
         D)
             set -x
@@ -55,7 +63,7 @@ function shape {
       \"correlation\": 0
     },
     \"loss\": {
-      \"percentage\": 0,
+      \"percentage\": ${UP_LOSS},
       \"correlation\": 0
     },
     \"reorder\": {
@@ -77,7 +85,7 @@ function shape {
       \"correlation\": 0
     },
     \"loss\": {
-      \"percentage\": 0,
+      \"percentage\": ${DOWN_LOSS},
       \"correlation\": 0
     },
     \"reorder\": {
